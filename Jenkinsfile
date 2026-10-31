@@ -4,29 +4,21 @@ pipeline {
         maven 'Maven'
         jdk 'JDK21'
     }
-    options {
-        skipStagesAfterUnstable()
-    }
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean package'
+                sh 'mvn clean package -DskipTests'
             }
         }
         stage('Test') {
             steps {
                 sh 'mvn test'
             }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
         }
         stage('Deliver') {
             steps {
-                sh './jenkins/scripts/deliver.sh'
-                archiveArtifacts artifacts: 'target/*.jar'
+                sh 'mvn jar:jar install:install'
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
             }
         }
     }
